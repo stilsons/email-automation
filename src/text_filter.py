@@ -69,6 +69,7 @@ def debug_log(before, after, reason):
     print(truncate(after))
     print("-------------\n")
 
+# What calls clean_email_body?  Two places: text_exporter.py and word_Exporter.py.
 def clean_email_body(body: str, trim_thread: bool = False) -> str:
     if not body:
         return ""
@@ -167,6 +168,7 @@ def clean_email_body(body: str, trim_thread: bool = False) -> str:
                 .replace("   ", " ")
                 .replace("+1", "")
                 .replace(" :", ":")
+                .replace(" .", ".")
                 .replace(" ,", ",")
                 .replace(",Iselin", ", Iselin")
                 .replace("::", " ")
@@ -178,6 +180,7 @@ def clean_email_body(body: str, trim_thread: bool = False) -> str:
                 .replace("&nbsp;"," ")
                 .replace("privacy", "")
                 .replace("Privacy", "")
+                .replace("{JobPosting: city}", "")
                 .replace("MIssion", "Mission")
                 .replace("(Onsite)","onsite")
                 .replace(".ceipalmm.com", "")
@@ -190,10 +193,13 @@ def clean_email_body(body: str, trim_thread: bool = False) -> str:
                 .replace("USA","")
                 .replace("Full stack","Full Stack")
                 .replace("Best Regards", "Best regards")
+                .replace("Stilson", "")
+                .replace("Steve", "Dominick")
                 .replace("Your Email Title", "")
                 .replace("Thanks & Regards", "\nThanks and regards")
                 .replace(" in Massachusetts-*", "")
-                .replace("intended solely for the addressee", "")
+                .replace("This message is intended solely for the addressee", "")
+                .replace("Please review the job description below.", "")
                 .replace("Professional References:(Preferably Supervisory", "professional references (preferably supervisory")
         )
         line = re.sub(r"[\u200B-\u200D\uFEFF]", "", line)
