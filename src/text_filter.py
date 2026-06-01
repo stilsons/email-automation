@@ -198,6 +198,7 @@ def clean_email_body(body: str, trim_thread: bool = False) -> str:
                 .replace("Your Email Title", "")
                 .replace("Thanks & Regards", "\nThanks and regards")
                 .replace(" in Massachusetts-*", "")
+                .replace("Pulled from the full job description","")
                 .replace("This message is intended solely for the addressee", "")
                 .replace("Please review the job description below.", "")
                 .replace("Professional References:(Preferably Supervisory", "professional references (preferably supervisory")
