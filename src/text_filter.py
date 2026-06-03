@@ -180,6 +180,7 @@ def clean_email_body(body: str, trim_thread: bool = False) -> str:
                 .replace("&nbsp;"," ")
                 .replace("privacy", "")
                 .replace("Privacy", "")
+                .replace("Note: ", "")
                 .replace("{JobPosting: city}", "")
                 .replace("MIssion", "Mission")
                 .replace("(Onsite)","onsite")
