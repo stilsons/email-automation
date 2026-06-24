@@ -55,6 +55,40 @@ def remove_private_unicode(text: str) -> str:
     """
     return re.sub(r"[\uE000-\uF8FF]", "", text)
 
+def format_phone_numbers(text: str) -> str:
+    """
+    Convert common US phone number formats to:
+        (505) 563-4527
+
+    Handles examples like:
+        5055634527
+        505-563-4527
+        505.563.4527
+        505 563 4527
+        (505)563-4527
+        (505) 563 4527
+        +1 505 563 4527
+        1-505-563-4527
+
+    This intentionally avoids matching numbers embedded inside words.
+    """
+
+    phone_pattern = re.compile(
+        r"""
+        (?<![\w])                 # do not start inside a word/identifier
+        (?:\+?1[\s.\-]*)?         # optional US country code
+        \(?(\d{3})\)?             # area code, with optional parentheses
+        [\s.\-]*                  # optional separator
+        (\d{3})                   # prefix
+        [\s.\-]*                  # optional separator
+        (\d{4})                   # line number
+        (?![\w])                  # do not end inside a word/identifier
+        """,
+        re.VERBOSE,
+    )
+
+    return phone_pattern.sub(r"(\1) \2-\3", text)
+
 # Main function to clean email body text.
 def truncate(value, length=200):
     text = repr(value)
@@ -174,7 +208,7 @@ def clean_email_body(body: str, trim_thread: bool = False) -> str:
                 .replace("::", " ")
                 .replace("͏­", "")
                 .replace(" ", " ")
-                .replace(" ", " ")
+                .replace(" ", " ")
                 .replace("/)", ")")
                 .replace("!!", "!")
                 .replace("&nbsp;"," ")
@@ -208,6 +242,9 @@ def clean_email_body(body: str, trim_thread: bool = False) -> str:
 
         # Normalize odd spaces / invisible chars per line.
         normalized = re.sub(r"[ \t]+", " ", line).strip()
+
+        # Format US phone numbers.
+        normalized = format_phone_numbers(normalized)
 
         # Remove leading pipe/table artifacts.
         normalized = re.sub(r"^[\|\s]+", "", normalized)
@@ -248,5 +285,3 @@ def clean_email_body(body: str, trim_thread: bool = False) -> str:
     text = new_text
 
     return text.strip()
-
-
