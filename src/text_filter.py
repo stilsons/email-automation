@@ -55,6 +55,40 @@ def remove_private_unicode(text: str) -> str:
     """
     return re.sub(r"[\uE000-\uF8FF]", "", text)
 
+def format_phone_numbers(text: str) -> str:
+    """
+    Convert common US phone number formats to:
+        (505) 563-4527
+
+    Handles examples like:
+        5055634527
+        505-563-4527
+        505.563.4527
+        505 563 4527
+        (505)563-4527
+        (505) 563 4527
+        +1 505 563 4527
+        1-505-563-4527
+
+    This intentionally avoids matching numbers embedded inside words.
+    """
+
+    phone_pattern = re.compile(
+        r"""
+        (?<![\w])                 # do not start inside a word/identifier
+        (?:\+?1[\s.\-]*)?         # optional US country code
+        \(?(\d{3})\)?             # area code, with optional parentheses
+        [\s.\-]*                  # optional separator
+        (\d{3})                   # prefix
+        [\s.\-]*                  # optional separator
+        (\d{4})                   # line number
+        (?![\w])                  # do not end inside a word/identifier
+        """,
+        re.VERBOSE,
+    )
+
+    return phone_pattern.sub(r"(\1) \2-\3", text)
+
 # Main function to clean email body text.
 def truncate(value, length=200):
     text = repr(value)
@@ -69,6 +103,7 @@ def debug_log(before, after, reason):
     print(truncate(after))
     print("-------------\n")
 
+# What calls clean_email_body?  Two places: text_exporter.py and word_Exporter.py.
 def clean_email_body(body: str, trim_thread: bool = False) -> str:
     if not body:
         return ""
@@ -167,6 +202,7 @@ def clean_email_body(body: str, trim_thread: bool = False) -> str:
                 .replace("   ", " ")
                 .replace("+1", "")
                 .replace(" :", ":")
+                .replace(" .", ".")
                 .replace(" ,", ",")
                 .replace(",Iselin", ", Iselin")
                 .replace("::", " ")
@@ -179,6 +215,8 @@ def clean_email_body(body: str, trim_thread: bool = False) -> str:
                 .replace("&nbsp;"," ")
                 .replace("privacy", "")
                 .replace("Privacy", "")
+                .replace("Note: ", "")
+                .replace("{JobPosting: city}", "")
                 .replace("MIssion", "Mission")
                 .replace("(Onsite)","onsite")
                 .replace(".ceipalmm.com", "")
@@ -192,16 +230,23 @@ def clean_email_body(body: str, trim_thread: bool = False) -> str:
                 .replace("USA","")
                 .replace("Full stack","Full Stack")
                 .replace("Best Regards", "Best regards")
+                .replace("Stilson", "")
+                .replace("Steve", "Dominick")
                 .replace("Your Email Title", "")
                 .replace("Thanks & Regards", "\nThanks and regards")
                 .replace(" in Massachusetts-*", "")
-                .replace("intended solely for the addressee", "")
+                .replace("Pulled from the full job description","")
+                .replace("This message is intended solely for the addressee", "")
+                .replace("Please review the job description below.", "")
                 .replace("Professional References:(Preferably Supervisory", "professional references (preferably supervisory")
         )
         line = re.sub(r"[\u200B-\u200D\uFEFF]", "", line)
 
         # Normalize odd spaces / invisible chars per line.
         normalized = re.sub(r"[ \t]+", " ", line).strip()
+
+        # Format US phone numbers.
+        normalized = format_phone_numbers(normalized)
 
         # Remove leading pipe/table artifacts.
         normalized = re.sub(r"^[\|\s]+", "", normalized)
@@ -242,5 +287,3 @@ def clean_email_body(body: str, trim_thread: bool = False) -> str:
     text = new_text
 
     return text.strip()
-
-
