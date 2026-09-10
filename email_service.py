@@ -25,7 +25,7 @@ def send_batch_email(zip_path: Path) -> bool:
         print(f"[EMAIL] {exc}")
         return False
 
-    subject = f"Job Batch - {zip_path.stem}"
+    subject = f"For Dominick - {zip_path.stem}"
     body_text = config["send"]["body"]["text"].strip()
     signature_name = config["send"]["signature"]["name"].strip()
     body = f"{body_text}\n\nRegards,\n{signature_name}"
